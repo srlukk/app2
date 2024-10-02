@@ -1,0 +1,36 @@
+name: master_books
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.5.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  image_picker: ^0.8.7+3
+  sqflite: ^2.3.3+1
+  path: ^1.9.0
+
+
+dev_dependencies:
+  flutter_lints: ^4.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  assets:
+    - assets/images/diariodeumbanana.jpg
+    - assets/images/harrypotter.jpg
+    - assets/images/elonmusk.jpg
+    - assets/images/sobrevivendonoinferno.jpg
+    - assets/images/acabana.jpg
+    - assets/images/E-assim-que-acaba.jpg
+    - assets/images/cafecomdeuspai.jpg
+    - assets/images/quempensaenriquece.jpg
+    - assets/images/DaVinciCode.jpg
+    - assets/images/O_Alquimista.jpg
+    - assets/images/AngelsAndDemons.jpg
+    - assets/images/Jogos_Vorazes.jpg
+  uses-material-design: true
