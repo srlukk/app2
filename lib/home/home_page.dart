@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:master_books/addBook/add_book/add_book_page.dart';
 import 'package:master_books/details/details_page.dart';
@@ -17,7 +16,6 @@ class _HomePageState extends State<HomePage> {
   final DatabaseHelper _dbHelper = DatabaseHelper();
   List<Livro> books = [];
   List<Livro> filteredBooks = [];
-
   TextEditingController searchController = TextEditingController();
 
   @override
@@ -29,7 +27,12 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  void _loadBooks() async {
+  Future<void> updateBook(int index, Livro updatedBook) async {
+    await _dbHelper.atualizarLivro(updatedBook); //atualiza no banco de dados
+    _loadBooks(); //recarrega os livros após atualização
+  }
+
+  Future<void> _loadBooks() async {
     final livros = await _dbHelper.obterLivros();
     setState(() {
       books = livros;
@@ -64,13 +67,6 @@ class _HomePageState extends State<HomePage> {
   void deleteBook(int id) async {
     await _dbHelper.deletarLivro(id);
     _loadBooks();
-  }
-
-  void updateBook(int index, Livro updatedBook) {
-    setState(() {
-      books[index] = updatedBook;
-      filteredBooks = List.from(books);
-    });
   }
 
   @override
@@ -118,93 +114,99 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.all(8.0),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                crossAxisSpacing: 10.0,
-                mainAxisSpacing: 20.0,
-                childAspectRatio: 0.4,
-              ),
-              itemCount: filteredBooks.length,
-              itemBuilder: (context, index) {
-                final book = filteredBooks[index];
-                final imagePath = book.imagem;
+      body: RefreshIndicator(
+        onRefresh: _loadBooks,
+        child: Column(
+          children: [
+            Expanded(
+              child: GridView.builder(
+                padding: const EdgeInsets.all(8.0),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 10.0,
+                  mainAxisSpacing: 20.0,
+                  childAspectRatio: 0.4,
+                ),
+                itemCount: filteredBooks.length,
+                itemBuilder: (context, index) {
+                  final book = filteredBooks[index];
+                  final imagePath = book.imagem;
 
-                return InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => DetailsPage(
-                          title: book.titulo,
-                          author: book.autor,
-                          image: book.imagem,
-                          resume: book.resumo,
-                          onDelete: () => deleteBook(book.id!),
-                          onEdit: (newTitle, newAuthor, newImage, newResume) {
-                            final updatedBook = Livro(
-                              id: book.id, // Preserva o ID do livro original
-                              titulo: newTitle,
-                              autor: newAuthor,
-                              imagem: newImage,
-                              resumo: newResume,
-                            );
-                            updateBook(index, updatedBook);
-                          },
+                  return InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DetailsPage(
+                            title: book.titulo,
+                            author: book.autor,
+                            image: book.imagem,
+                            resume: book.resumo,
+                            onDelete: () => deleteBook(book.id!),
+                            onEdit: (newTitle, newAuthor, newImage, newResume) {
+                              final updatedBook = Livro(
+                                id: book.id,
+                                titulo: newTitle,
+                                autor: newAuthor,
+                                imagem: newImage,
+                                resumo: newResume,
+                              );
+                              updateBook(index, updatedBook);
+                            },
+                          ),
                         ),
+                      ).then((_) {
+                        // Após voltar da DetailsPage, recarregue a lista de livros
+                        _loadBooks();
+                      });
+                    },
+                    child: Card(
+                      clipBehavior: Clip.antiAlias,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          AspectRatio(
+                            aspectRatio: 0.7,
+                            child: imagePath.startsWith('assets/')
+                                ? Image.asset(
+                                    imagePath,
+                                    fit: BoxFit.cover,
+                                  )
+                                : Image.file(
+                                    File(imagePath),
+                                    fit: BoxFit.cover,
+                                  ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              book.titulo,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10.0, vertical: 15.0),
+                            child: Text(
+                              book.autor,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    );
-                  },
-                  child: Card(
-                    clipBehavior: Clip.antiAlias,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        AspectRatio(
-                          aspectRatio: 0.7,
-                          child: imagePath.startsWith('assets/')
-                              ? Image.asset(
-                                  imagePath,
-                                  fit: BoxFit.cover,
-                                )
-                              : Image.file(
-                                  File(imagePath),
-                                  fit: BoxFit.cover,
-                                ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            book.titulo,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10.0, vertical: 15.0),
-                          child: Text(
-                            book.autor,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
-                      ],
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

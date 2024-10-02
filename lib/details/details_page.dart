@@ -8,6 +8,7 @@ class DetailsPage extends StatefulWidget {
   final String image;
   final String resume;
   final VoidCallback onDelete;
+  final Function(String, String, String, String) onEdit; 
 
   const DetailsPage({
     super.key,
@@ -15,8 +16,8 @@ class DetailsPage extends StatefulWidget {
     required this.author,
     required this.image,
     required this.resume,
-    required this.onDelete, 
-    required Null Function(dynamic newTitle, dynamic newAuthor, dynamic newImage, dynamic newResume) onEdit,
+    required this.onDelete,
+    required this.onEdit, 
   });
 
   @override
@@ -46,6 +47,9 @@ class _DetailsPageState extends State<DetailsPage> {
       image = newImage;
       resume = newResume;
     });
+
+    // chama a função de edição passada
+    widget.onEdit(newTitle, newAuthor, newImage, newResume);
   }
 
   @override
@@ -56,41 +60,46 @@ class _DetailsPageState extends State<DetailsPage> {
         backgroundColor: Colors.blue[100],
         actions: [
           IconButton(
-            icon: Icon(Icons.edit),
+            icon: const Icon(Icons.edit),
             onPressed: () {
-              // Navega para a página de edição
-              Navigator.of(context).push(
+              //navega para a página de edição
+              Navigator.of(context)
+                  .push(
                 MaterialPageRoute(
                   builder: (context) => EditBookPage(
                     title: title,
                     author: author,
                     image: image,
                     resume: resume,
-                    onEdit: _editBook, // Passa a função de edição
+                    onEdit: _editBook, //passa a função de editar
                   ),
                 ),
-              );
+              )
+                  .then((_) {
+                //atualiza a tela ao voltar, se necessário
+                // Por exemplo, pode-se chamar _loadBooks aqui se estiver na HomePage
+              });
             },
           ),
           IconButton(
-            icon: Icon(Icons.delete),
+            icon: const Icon(Icons.delete),
             onPressed: () {
               // Confirmação para excluir o livro
               showDialog(
                 context: context,
                 builder: (BuildContext context) {
                   return AlertDialog(
-                    title: Text("Excluir Livro"),
-                    content: Text("Deseja excluir o livro?"),
+                    title: const Text("Excluir Livro"),
+                    content: const Text("Deseja excluir o livro?"),
                     actions: [
                       TextButton(
-                        child: Text("Cancelar"),
+                        child: const Text("Cancelar"),
                         onPressed: () {
                           Navigator.of(context).pop(); // Fecha o diálogo
                         },
                       ),
                       TextButton(
-                        child: Text("Sim"),
+                        child: const Text("Sim"),
                         onPressed: () {
                           widget.onDelete(); // Função deletar
                           Navigator.of(context)
@@ -134,41 +143,44 @@ class _DetailsPageState extends State<DetailsPage> {
                             width: 200,
                           ),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 50),
+                padding: const EdgeInsets.symmetric(horizontal: 50),
                 child: Text(
                   title,
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.w700),
                   textAlign: TextAlign.center,
                 ),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 60),
+                padding: const EdgeInsets.symmetric(horizontal: 60),
                 child: Text(
                   author,
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400),
+                  style: const TextStyle(
+                      fontSize: 15, fontWeight: FontWeight.w400),
                   maxLines: 1,
                   textAlign: TextAlign.center,
                 ),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 50),
+                padding: const EdgeInsets.symmetric(horizontal: 50),
                 child: Text(
                   'Resumo:',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+                  style: const TextStyle(
+                      fontSize: 22, fontWeight: FontWeight.w700),
                 ),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Container(
                   width: double.infinity,
                   child: Text(
                     resume,
-                    style: TextStyle(fontSize: 18),
+                    style: const TextStyle(fontSize: 18),
                     textAlign: TextAlign.center,
                   ),
                 ),

@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class EditBookPage extends StatefulWidget {
   final String title;
@@ -26,6 +29,9 @@ class _EditBookPageState extends State<EditBookPage> {
   final TextEditingController imageController = TextEditingController();
   final TextEditingController resumeController = TextEditingController();
 
+  final ImagePicker _picker = ImagePicker(); // Instância do ImagePicker
+  File? _selectedImage; // Para armazenar a imagem selecionada
+
   @override
   void initState() {
     super.initState();
@@ -35,11 +41,22 @@ class _EditBookPageState extends State<EditBookPage> {
     resumeController.text = widget.resume;
   }
 
+  Future<void> _pickImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = File(pickedFile.path); // Armazena a imagem selecionada
+        imageController.text =
+            pickedFile.path; // Atualiza o controlador de texto
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Book'),
+        title: const Text('Editar Livro'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -47,16 +64,23 @@ class _EditBookPageState extends State<EditBookPage> {
           children: [
             TextField(
               controller: titleController,
-              decoration: const InputDecoration(labelText: 'Titulo'),
+              decoration: const InputDecoration(labelText: 'Título'),
             ),
             TextField(
               controller: authorController,
               decoration: const InputDecoration(labelText: 'Autor'),
             ),
-            TextField(
-              controller: imageController,
-              decoration: const InputDecoration(labelText: 'Imagem ou URL'),
+            ElevatedButton(
+              onPressed: _pickImage, // Chama o método para selecionar imagem
+              child: const Text('Selecionar Imagem'),
             ),
+            if (_selectedImage != null) // Exibe a imagem selecionada
+              Image.file(
+                _selectedImage!,
+                height: 100,
+                width: 100,
+                fit: BoxFit.cover,
+              ),
             TextField(
               controller: resumeController,
               decoration: const InputDecoration(labelText: 'Resumo'),
@@ -64,13 +88,15 @@ class _EditBookPageState extends State<EditBookPage> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
+                // Chama a função de edição
                 widget.onEdit(
                   titleController.text,
                   authorController.text,
                   imageController.text,
                   resumeController.text,
                 );
-                Navigator.of(context).pop(); // Volta para detalhes
+                // Volta para a tela anterior
+                Navigator.of(context).pop();
               },
               child: const Text('Salvar'),
             ),
